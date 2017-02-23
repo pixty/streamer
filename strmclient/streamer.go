@@ -32,7 +32,7 @@ type streamer struct {
 	outputDir string
 
 	// run command
-	// ffmpeg -i pixty2.avi -t <duration> -acodec copy -vcodec copy <outFile>
+	// ffmpeg -i rtsp://192.168.2.19:554/ch0_0.h264 -t <duration> -acodec copy -vcodec copy <outFile>
 	//
 	// <duration> - the record duration is seconds
 	// <outFile> - the outputFileName
@@ -51,10 +51,10 @@ func main() {
 
 	var help bool
 	flag.StringVar(&s.outputDir, "output-dir", "./", "Output directory")
-	flag.StringVar(&s.cmd, "command", "ffmpeg -i pixty2.avi -t <duration> -acodec copy -vcodec copy <outFile>", "Command")
+	flag.StringVar(&s.cmd, "command", "ffmpeg -i rtsp://192.168.2.19:554/ch0_0.h264 -t <duration> -acodec copy -vcodec copy <outFile>", "Command")
 	flag.StringVar(&s.outFileExt, "file-ext", "mp4", "Output file extension (no dot)")
 	flag.StringVar(&s.targetUrl, "target-url", "http://localhost:8080/video-stream", "Where to send the file")
-	flag.IntVar(&s.durationSec, "duration", 60, "A file chunk duration")
+	flag.IntVar(&s.durationSec, "duration", 300, "A file chunk duration")
 	flag.BoolVar(&help, "help", false, "Prints the usage")
 
 	flag.Parse()
@@ -131,7 +131,11 @@ func (s *streamer) sendFileRoutine(ch chan string) {
 				s.logger.Warn("Could not send file=", fn, " to ", s.targetUrl, ", err=", err)
 			}
 
-			os.Remove(fn)
+			err = os.Remove(fn)
+			if err != nil {
+				s.logger.Warn("Could not remove file=", fn, ", err=", err)
+			}
+
 		case <-s.ctx.Done():
 			s.logger.Info("sendFileRoutine: closed context.")
 			return
@@ -160,6 +164,7 @@ func (s *streamer) sendFile(filename string) error {
 		s.logger.Error("Could not open file=", filename, ", err=", err)
 		return err
 	}
+	defer fh.Close()
 
 	_, err = io.Copy(fileWriter, fh)
 	if err != nil {
@@ -179,6 +184,7 @@ func (s *streamer) sendFile(filename string) error {
 	if err != nil {
 		return err
 	}
+
 	defer resp.Body.Close()
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
