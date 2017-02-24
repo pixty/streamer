@@ -30,7 +30,7 @@ Get the YI camera and follow standard steps to set up it in the client network. 
 - Wait around 5 min and try to connect with the smartphone app (probably Kalinka-mailinka will sound)
 - Check your cam it’s IP address in the router DHCP list
 
-1. You can run VLC and check that you have stream (srtp://192.168.2.19:554/ch0_0.h264)
+1. You can run VLC and check that you have stream (rtsp://192.168.2.19:554/ch0_0.h264)
 
 ### Install ffmpeg on local server (Windows)
 The local server is a computer where strmclient will be running. You have to have ffmpeg installed there. For Windows machine go to https://ffmpeg.org/download.html#build-windows and download ffmpeg there. Remember the path where you unzip it (C:\tools\ffmpeg-20170221-a5c1c7a-win64-static\bin\ in the example)
